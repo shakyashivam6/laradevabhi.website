@@ -1,4 +1,4 @@
-@props(['title' => 'Sterk - Creative Agency & Personal Portfolio Template'])
+@props(['title' => 'Abhishek Laravel Developer'])
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
