@@ -6,7 +6,6 @@ use App\Events\ContactEnquiryVerified;
 use App\Mail\OtpVerificationMail;
 use App\Models\Contact;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 
@@ -14,6 +13,7 @@ class ContactController extends Controller
 {
     public function sendOtp(Request $request)
     {
+        // Honeypot check
         if ($request->filled('website_url')) {
             return response()->json([
                 'status' => 'success',
@@ -21,6 +21,7 @@ class ContactController extends Controller
             ]);
         }
 
+        // Time-based bot check
         if ($request->filled('form_time')) {
             $elapsedSeconds = time() - (int)$request->form_time;
             if ($elapsedSeconds < 2) {
@@ -31,6 +32,7 @@ class ContactController extends Controller
             }
         }
 
+        // Google reCAPTCHA v2 verification
         $recaptchaSecret = config('services.recaptcha.secret_key');
         if ($recaptchaSecret) {
             $recaptchaToken = $request->input('g-recaptcha-response');
@@ -43,7 +45,7 @@ class ContactController extends Controller
 
             try {
                 $response = Http::asForm()->timeout(8)->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret' => $recaptchaSecret,
+                    'secret'   => $recaptchaSecret,
                     'response' => $recaptchaToken,
                     'remoteip' => $request->ip(),
                 ]);
@@ -55,81 +57,103 @@ class ContactController extends Controller
                     ], 422);
                 }
             } catch (\Exception $e) {
-                logger()->warning('Google reCAPTCHA verification exception: ' . $e->getMessage());
+                logger()->warning('Google reCAPTCHA exception: ' . $e->getMessage());
             }
         }
 
+        // Validate input
         $validated = $request->validate([
-            'name' => 'required|string|max:125',
-            'email' => 'required|email:rfc|max:100',
-            'mobile' => 'nullable|string|max:20',
+            'name'    => 'required|string|max:125',
+            'email'   => 'required|email:rfc|max:100',
+            'mobile'  => 'nullable|string|max:20',
             'message' => 'required|string|min:5|max:2000',
         ]);
 
-        $otp = (string) rand(100000, 999999);
+        $otp             = (string) rand(100000, 999999);
+        $normalizedEmail = strtolower(trim($validated['email']));
 
-        Cache::put('contact_otp_' . strtolower(trim($validated['email'])), $otp, now()->addMinutes(10));
+        // Store OTP in session (reliable across AJAX requests in same browser)
+        session([
+            'contact_otp'         => $otp,
+            'contact_otp_email'   => $normalizedEmail,
+            'contact_otp_expires' => now()->addMinutes(10)->timestamp,
+        ]);
 
         Mail::to($validated['email'])->queue(new OtpVerificationMail($otp));
 
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'A 6-digit verification code has been sent to ' . $validated['email'] . '. Please enter it below to complete your submission.'
         ]);
     }
 
     public function verifyAndSubmit(Request $request)
     {
+        // Honeypot check
         if ($request->filled('website_url')) {
             return response()->json([
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Thank you! Your inquiry has been submitted successfully.'
             ]);
         }
 
+        // Validate input
         $validated = $request->validate([
-            'name' => 'required|string|max:125',
-            'email' => 'required|email|max:100',
-            'mobile' => 'nullable|string|max:20',
+            'name'    => 'required|string|max:125',
+            'email'   => 'required|email|max:100',
+            'mobile'  => 'nullable|string|max:20',
             'message' => 'required|string|min:5|max:2000',
-            'otp' => 'required|digits:6',
+            'otp'     => 'required|digits:6',
         ]);
 
         $normalizedEmail = strtolower(trim($validated['email']));
 
-        // 👇 TEMP DEBUG — remove after confirming fix
+        // Retrieve OTP from session
+        $sessionOtp     = session('contact_otp');
+        $sessionEmail   = session('contact_otp_email');
+        $sessionExpires = session('contact_otp_expires');
+
+        // Debug log (temporary — remove after confirming fix)
         \Log::info('OTP Verify Debug', [
-            'normalized_email' => $normalizedEmail,
-            'cache_key'        => 'contact_otp_' . $normalizedEmail,
-            'cached_otp'       => \Cache::get('contact_otp_' . $normalizedEmail),
+            'submitted_email'  => $normalizedEmail,
+            'session_email'    => $sessionEmail,
+            'session_otp'      => $sessionOtp,
             'submitted_otp'    => $validated['otp'],
-            'cache_driver'     => config('cache.default'),
+            'expired'          => $sessionExpires ? now()->timestamp > $sessionExpires : 'no_expiry',
         ]);
 
-        $cachedOtp = Cache::get('contact_otp_' . $normalizedEmail);
-
-        if (!$cachedOtp || $cachedOtp != $validated['otp']) {
+        // Validate OTP: must exist, match, be for same email, and not expired
+        if (
+            !$sessionOtp ||
+            !$sessionEmail ||
+            $sessionEmail !== $normalizedEmail ||
+            $sessionOtp !== $validated['otp'] ||
+            now()->timestamp > (int) $sessionExpires
+        ) {
             return response()->json([
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Invalid or expired verification code. Please check your inbox or request a new one.'
             ], 422);
         }
 
+        // Save contact
         $contact = Contact::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'mobile' => $validated['mobile'] ?? null,
-            'message' => $validated['message'],
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'mobile'      => $validated['mobile'] ?? null,
+            'message'     => $validated['message'],
             'is_Verified' => true,
             'verified_at' => now(),
         ]);
 
-        Cache::forget('contact_otp_' . $normalizedEmail);
+        // Clear OTP from session
+        session()->forget(['contact_otp', 'contact_otp_email', 'contact_otp_expires']);
 
+        // Fire event → ThankYou mail via queued listener
         event(new ContactEnquiryVerified($contact));
 
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Thank you, ' . $validated['name'] . '! Your inquiry has been verified and submitted successfully. I will contact you soon.'
         ]);
     }
