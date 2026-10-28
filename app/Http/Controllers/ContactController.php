@@ -61,7 +61,7 @@ class ContactController extends Controller
 
         $validated = $request->validate([
             'name' => 'required|string|max:125',
-            'email' => 'required|email:rfc,dns|max:100',
+            'email' => 'required|email:rfc|max:100',
             'mobile' => 'nullable|string|max:20',
             'message' => 'required|string|min:5|max:2000',
         ]);
@@ -96,6 +96,16 @@ class ContactController extends Controller
         ]);
 
         $normalizedEmail = strtolower(trim($validated['email']));
+
+        // 👇 TEMP DEBUG — remove after confirming fix
+        \Log::info('OTP Verify Debug', [
+            'normalized_email' => $normalizedEmail,
+            'cache_key'        => 'contact_otp_' . $normalizedEmail,
+            'cached_otp'       => \Cache::get('contact_otp_' . $normalizedEmail),
+            'submitted_otp'    => $validated['otp'],
+            'cache_driver'     => config('cache.default'),
+        ]);
+
         $cachedOtp = Cache::get('contact_otp_' . $normalizedEmail);
 
         if (!$cachedOtp || $cachedOtp != $validated['otp']) {
