@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Events\ContactEnquiryVerified;
+use App\Mail\AdminNotificationMail;
 use App\Mail\OtpVerificationMail;
 use App\Models\Contact;
 use Illuminate\Http\Request;
@@ -21,8 +22,10 @@ class ContactController extends Controller
             ]);
         }
 
-        // Time-based bot check
-        if ($request->filled('form_time')) {
+        $isResend = $request->boolean('is_resend');
+
+        // Time-based bot check (skip for resend)
+        if (!$isResend && $request->filled('form_time')) {
             $elapsedSeconds = time() - (int)$request->form_time;
             if ($elapsedSeconds < 2) {
                 return response()->json([
@@ -32,32 +35,52 @@ class ContactController extends Controller
             }
         }
 
-        // Google reCAPTCHA v2 verification
-        $recaptchaSecret = config('services.recaptcha.secret_key');
-        if ($recaptchaSecret) {
-            $recaptchaToken = $request->input('g-recaptcha-response');
-            if (empty($recaptchaToken)) {
+        // 1-minute cooldown for resend
+        if ($isResend) {
+            $lastSentAt = session('contact_otp_sent_at');
+            if ($lastSentAt && (time() - (int)$lastSentAt) < 60) {
+                $remaining = 60 - (time() - (int)$lastSentAt);
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'Please complete the Google reCAPTCHA verification.'
+                    'status'  => 'error',
+                    'message' => "Please wait {$remaining} seconds before requesting a new code."
+                ], 429);
+            }
+            // Resend: skip reCAPTCHA (user already proved human on first send)
+            // But ensure they actually went through sendOtp before
+            if (!session('contact_otp_email')) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Invalid request. Please reload the page and try again.'
                 ], 422);
             }
-
-            try {
-                $response = Http::asForm()->timeout(8)->post('https://www.google.com/recaptcha/api/siteverify', [
-                    'secret'   => $recaptchaSecret,
-                    'response' => $recaptchaToken,
-                    'remoteip' => $request->ip(),
-                ]);
-
-                if (!$response->json('success')) {
+        } else {
+            // First send: verify reCAPTCHA
+            $recaptchaSecret = config('services.recaptcha.secret_key');
+            if ($recaptchaSecret) {
+                $recaptchaToken = $request->input('g-recaptcha-response');
+                if (empty($recaptchaToken)) {
                     return response()->json([
                         'status' => 'error',
-                        'message' => 'Google reCAPTCHA verification failed. Please try again.'
+                        'message' => 'Please complete the Google reCAPTCHA verification.'
                     ], 422);
                 }
-            } catch (\Exception $e) {
-                logger()->warning('Google reCAPTCHA exception: ' . $e->getMessage());
+
+                try {
+                    $response = Http::asForm()->timeout(8)->post('https://www.google.com/recaptcha/api/siteverify', [
+                        'secret'   => $recaptchaSecret,
+                        'response' => $recaptchaToken,
+                        'remoteip' => $request->ip(),
+                    ]);
+
+                    if (!$response->json('success')) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Google reCAPTCHA verification failed. Please try again.'
+                        ], 422);
+                    }
+                } catch (\Exception $e) {
+                    logger()->warning('Google reCAPTCHA exception: ' . $e->getMessage());
+                }
             }
         }
 
@@ -77,13 +100,16 @@ class ContactController extends Controller
             'contact_otp'         => $otp,
             'contact_otp_email'   => $normalizedEmail,
             'contact_otp_expires' => now()->addMinutes(10)->timestamp,
+            'contact_otp_sent_at' => time(),
         ]);
 
         Mail::to($validated['email'])->queue(new OtpVerificationMail($otp));
 
         return response()->json([
             'status'  => 'success',
-            'message' => 'A 6-digit verification code has been sent to ' . $validated['email'] . '. Please enter it below to complete your submission.'
+            'message' => $isResend
+                ? 'A new verification code has been sent to ' . $validated['email'] . '.'
+                : 'A 6-digit verification code has been sent to ' . $validated['email'] . '. Please enter it below to complete your submission.'
         ]);
     }
 
@@ -147,10 +173,13 @@ class ContactController extends Controller
         ]);
 
         // Clear OTP from session
-        session()->forget(['contact_otp', 'contact_otp_email', 'contact_otp_expires']);
+        session()->forget(['contact_otp', 'contact_otp_email', 'contact_otp_expires', 'contact_otp_sent_at']);
 
         // Fire event → ThankYou mail via queued listener
         event(new ContactEnquiryVerified($contact));
+
+        // Notify admin about new enquiry
+        Mail::to('shakya.shivam6@gmail.com')->queue(new AdminNotificationMail($contact));
 
         return response()->json([
             'status'  => 'success',

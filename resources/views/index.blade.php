@@ -611,6 +611,25 @@
                 }
 
                 // Step 1: Send OTP to User's Email
+                var resendCountdownTimer = null;
+
+                function startResendCooldown() {
+                    var seconds = 60;
+                    var resendBtn = $('#btn_resend_otp');
+                    resendBtn.css({'pointer-events': 'none', 'opacity': '0.45'});
+                    resendBtn.text('Resend Code (' + seconds + 's)');
+                    resendCountdownTimer = setInterval(function () {
+                        seconds--;
+                        if (seconds <= 0) {
+                            clearInterval(resendCountdownTimer);
+                            resendBtn.css({'pointer-events': 'auto', 'opacity': '1'});
+                            resendBtn.text('Resend Code');
+                        } else {
+                            resendBtn.text('Resend Code (' + seconds + 's)');
+                        }
+                    }, 1000);
+                }
+
                 $('#btn_send_otp, #btn_resend_otp').on('click', function(e) {
                     e.preventDefault();
                     $('#contact_alert').hide().empty();
@@ -640,16 +659,18 @@
                         return;
                     }
 
-                    // Check Google reCAPTCHA
-                    var recaptchaResponse = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
-                    if ($('.g-recaptcha').length && !recaptchaResponse) {
-                        showContactAlert('error', 'Please verify that you are not a robot (reCAPTCHA).');
-                        return;
-                    }
-
-                    var isResend = $(this).attr('id') === 'btn_resend_otp';
-                    var sendBtn = $('#btn_send_otp');
+                    var isResend  = $(this).attr('id') === 'btn_resend_otp';
+                    var sendBtn   = $('#btn_send_otp');
                     var resendBtn = $('#btn_resend_otp');
+
+                    var recaptchaResponse = '';
+                    if (!isResend) {
+                        recaptchaResponse = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+                        if ($('.g-recaptcha').length && !recaptchaResponse) {
+                            showContactAlert('error', 'Please verify that you are not a robot (reCAPTCHA).');
+                            return;
+                        }
+                    }
                     
                     if (isResend) {
                         resendBtn.text('Resending...');
@@ -670,6 +691,7 @@
                             message: message,
                             website_url: websiteUrl,
                             form_time: formTime,
+                            is_resend: isResend ? 1 : 0,
                             'g-recaptcha-response': recaptchaResponse
                         },
                         dataType: 'json',
@@ -680,11 +702,18 @@
 
                             if (res.status === 'success') {
                                 showContactAlert('success', res.message);
-                                $('#recaptcha_wrap').slideUp(300);
-                                sendBtn.hide();
-                                $('#otp_section').slideDown(300);
-                                $('#btn_verify_submit').fadeIn(300);
-                                $('#contact_otp').focus();
+                                if (!isResend) {
+                                    $('#recaptcha_wrap').slideUp(300);
+                                    sendBtn.hide();
+                                    $('#otp_section').slideDown(300);
+                                    $('#btn_verify_submit').fadeIn(300);
+                                    $('#contact_otp').focus();
+                                } else {
+                                    $('#contact_otp').val('').focus();
+                                }
+                                // Start/restart 60-second resend cooldown
+                                if (resendCountdownTimer) { clearInterval(resendCountdownTimer); }
+                                startResendCooldown();
                             } else {
                                 if (!isResend) {
                                     sendBtn.prop('disabled', false);
