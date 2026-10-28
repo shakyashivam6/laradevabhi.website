@@ -30,3 +30,4 @@ class AdminNotificationMail extends Mailable implements ShouldQueue
         );
     }
 }
+
