@@ -1,13 +1,13 @@
-@props(['title' => 'Abhishek Laravel Developer'])
+@props(['title' => 'Abhishek Kumar | Laravel & PHP Developer'])
 <!DOCTYPE html>
 <html lang="en-US">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title }}</title>
-    <meta name="description" content="Sterk is a powerful and minimal template for creative agencies, freelancers, and personal resumes. Features a clean, responsive design with elegant Oswald & Poppins typography.">
-    <meta name="keywords" content="agency, personal portfolio, resume, freelancer, business, creative studio, photo studio, bootstrap 5, minimal, clean, responsive, vcard, branding, digital portfolio">
-    <meta name="author" content="DuruThemes">
+    <meta name="description" content="Portfolio of Abhishek Kumar - Experienced Laravel & PHP Developer specializing in robust backend development, RESTful APIs, MySQL database architecture, and scalable web solutions.">
+    <meta name="keywords" content="Abhishek Kumar, Abhishek Shakya, Laravel Developer, PHP Developer, Backend Developer, CodeIgniter, MySQL, REST API, Web Development, Lucknow, Portfolio, Freelancer">
+    <meta name="author" content="Abhishek Kumar">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="{{ url()->current() }}">
     <link rel="icon" href="{{ asset('img/favicon.png') }}" type="image/png">

@@ -11,8 +11,10 @@
                     <div class="cd-headline clip animate-box" data-animate-effect="fadeInUp"> <span
                             class="cd-words-wrapper">
                             <b class="is-visible">Laravel Developer</b>
-                            <b>Codeigniter Developer</b>
-                            <!-- <b>MySQL</b> -->
+                            <b>PHP Developer</b>
+                            <b>Backend Developer</b>
+                            <b>CodeIgniter Developer</b>
+                            <b>REST API</b>
                         </span> </div>
                 </div>
             </div>
@@ -105,99 +107,109 @@
             </div>
         </div>
     </section>
-    ```
 
     <!-- Works -->
     <section id="works" class="section-padding bg-white" data-scroll-index="2">
         <div class="container">
             <div class="row">
                 <div class="col-md-12">
-                    <div class="title mb-30"> <span>Take a Look at</span>
-                        <h2 class="animate-box" data-animate-effect="fadeInLeft">Creative Works</h2>
-                        <p>Digital products that are human at heart.</p>
+                    <div class="title mb-30"> <span>Portfolio</span>
+                        <h2 class="animate-box" data-animate-effect="fadeInLeft">Featured Projects</h2>
+                        <p>A selection of web applications, robust backend architectures, and APIs I've developed.</p>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <ul class="col list-unstyled list-inline mb-0 portfolio-menu" id="menu-filter">
                     <li class="list-inline-item"><a class="active" data-filter="*">All</a></li>
+                    <li class="list-inline-item"><a class="" data-filter=".laravel">Laravel</a></li>
+                    <li class="list-inline-item"><a class="" data-filter=".api">REST APIs</a></li>
+                    <li class="list-inline-item"><a class="" data-filter=".backend">Backend & DB</a></li>
+                    <li class="list-inline-item"><a class="" data-filter=".codeigniter">CodeIgniter</a></li>
                     <li class="list-inline-item"><a class="" data-filter=".youtube">Youtube</a></li>
-                    <li class="list-inline-item"><a class="" data-filter=".vimeo">Vimeo</a></li>
-                    <li class="list-inline-item"><a class="" data-filter=".image">Image</a></li>
-                    <li class="list-inline-item"><a class="" data-filter=".detail">Detail</a></li>
                 </ul>
             </div>
-            <!-- Important Note: Some functionality (ajax, iframes, etc) will not work when you're opening local file directly on your browser, the code must be running on a web server. (Example: popup text, local youtube, vimeo url links.) Source: https://dimsemenov.com/plugins/magnific-popup/ -->
             <div class="row portfolio-filter mt-3">
+                <div class="col-md-4 portfolio-item laravel api backend">
+                    <a href="{{ asset('img/portfolio/02.png') }}" class="img-zoom" title="E-Commerce & Orders Engine - Laravel & MySQL">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/02.png') }}"
+                                    class="img-fluid mx-auto d-block" alt="E-Commerce Platform"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">E-Commerce & Orders Engine</h4>
+                                <p class="mb-3">Laravel / MySQL / REST API</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 portfolio-item laravel backend">
+                    <a href="{{ asset('img/portfolio/04.jpg') }}" class="img-zoom" title="Enterprise CRM & Management Portal - Laravel">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/04.jpg') }}"
+                                    class="img-fluid mx-auto d-block" alt="Enterprise CRM Portal"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">Enterprise CRM & Portal</h4>
+                                <p class="mb-3">Laravel / Blade / MySQL</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 portfolio-item codeigniter backend">
+                    <a href="{{ asset('img/portfolio/05.jpg') }}" class="img-zoom" title="Healthcare & Clinic Management - CodeIgniter">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/05.jpg') }}"
+                                    class="img-fluid mx-auto d-block" alt="Clinic Management System"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">Clinic & Health System</h4>
+                                <p class="mb-3">CodeIgniter / MySQL</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 portfolio-item laravel api">
+                    <a href="{{ asset('img/portfolio/01.jpg') }}" class="img-zoom" title="RESTful Auth & Microservices - Laravel Sanctum">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/01.jpg') }}"
+                                    class="img-fluid mx-auto d-block" alt="RESTful Auth & Microservices"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">RESTful Auth & API Service</h4>
+                                <p class="mb-3">Laravel / Sanctum / JWT</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 portfolio-item codeigniter backend">
+                    <a href="{{ asset('img/portfolio/03.jpg') }}" class="img-zoom" title="Inventory & Warehouse Portal - PHP & MySQL">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/03.jpg') }}"
+                                    class="img-fluid mx-auto d-block" alt="Inventory & Warehouse System"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">Inventory & Warehouse Portal</h4>
+                                <p class="mb-3">PHP / CodeIgniter / AJAX</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-md-4 portfolio-item laravel">
+                    <a href="{{ asset('img/portfolio/08.jpg') }}" class="img-zoom" title="Portfolio & CMS Platform - Laravel 11">
+                        <div class="portfolio-box">
+                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/08.jpg') }}"
+                                    class="img-fluid mx-auto d-block" alt="Portfolio & CMS Platform"> </div>
+                            <div class="portfolio-detail">
+                                <h4 class="mb-0">Portfolio & CMS Platform</h4>
+                                <p class="mb-3">Laravel 7|10|11|12|13</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
                 <div class="col-md-4 portfolio-item youtube">
                     <a href="https://www.youtube.com/channel/UCvXqS6ruZHzkWv4XCGOHGZw" target="_blank" class="">
                         <div class="portfolio-box">
                             <div class="portfolio-img"> <img src="{{ asset('img/portfolio/02.png') }}"
                                     class="img-fluid mx-auto d-block" alt=""> </div>
                             <div class="portfolio-detail">
-                                <h4 class="mb-0">Model Fashion</h4>
+                                <h4 class="mb-0">Self Activity</h4>
                                 <p class="mb-3">YouTube</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4 portfolio-item vimeo">
-                    <a href="https://vimeo.com/462906932" class="img-zoom popup-vimeo">
-                        <div class="portfolio-box">
-                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/04.jpg') }}"
-                                    class="img-fluid mx-auto d-block" alt=""> </div>
-                            <div class="portfolio-detail">
-                                <h4 class="mb-0">Cycling illos</h4>
-                                <p class="mb-3">Vimeo</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4 portfolio-item image">
-                    <a href="{{ asset('img/portfolio/05.jpg') }}" class="img-zoom">
-                        <div class="portfolio-box">
-                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/05.jpg') }}"
-                                    class="img-fluid mx-auto d-block" alt=""> </div>
-                            <div class="portfolio-detail">
-                                <h4 class="mb-0">Kinfolk Magazine</h4>
-                                <p class="mb-3">Image</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4 portfolio-item grid-of-images image">
-                    <a href="{{ asset('img/portfolio/01.jpg') }}" class="image-popup-vertical-fit img-zoom"
-                        title="House at Khlebny">
-                        <div class="portfolio-box">
-                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/01.jpg') }}"
-                                    class="img-fluid mx-auto d-block" alt=""> </div>
-                            <div class="portfolio-detail">
-                                <h4 class="mb-0">House at Khlebny</h4>
-                                <p class="mb-3">Image</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4 portfolio-item image">
-                    <a href="{{ asset('img/portfolio/03.jpg') }}" class="img-zoom" title="El Matate - Chocolate">
-                        <div class="portfolio-box">
-                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/03.jpg') }}"
-                                    class="img-fluid mx-auto d-block" alt=""> </div>
-                            <div class="portfolio-detail">
-                                <h4 class="mb-0">El Matate - Chocolate</h4>
-                                <p class="mb-3">Image</p>
-                            </div>
-                        </div>
-                    </a>
-                </div>
-                <div class="col-md-4 portfolio-item detail">
-                    <a href="projectpage.html" class="img-zoom simple-ajax-popup-align-top">
-                        <div class="portfolio-box">
-                            <div class="portfolio-img"> <img src="{{ asset('img/portfolio/08.jpg') }}"
-                                    class="img-fluid mx-auto d-block" alt=""> </div>
-                            <div class="portfolio-detail">
-                                <h4 class="mb-0">Cuyana Magazine</h4>
-                                <p class="mb-3">Detail</p>
                             </div>
                         </div>
                     </a>
@@ -212,56 +224,59 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="title mb-30"> <span>What I Do</span>
-                        <h2 class="animate-box" data-animate-effect="fadeInLeft">Creative Services</h2>
-                        <p>I am a freelancer designer. I develop and design for costumers around the world.
-                            <br />My clients are some of the most forward-looking companies in the world. Designed for
-                            today, built for tomorrow.
+                        <h2 class="animate-box" data-animate-effect="fadeInLeft">Development Services</h2>
+                        <p>Specialized backend and web engineering solutions designed to build secure, high-performance,
+                            <br />and scalable web applications tailored to business requirements.
                         </p>
                     </div>
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-3 animate-box" data-animate-effect="fadeInLeft">
-                    <div class="item mb-30"> <span class="icon"><i class="et-telescope"></i></span>
-                        <h5>Branding</h5>
+                    <div class="item mb-30"> <span class="icon"><i class="et-browser"></i></span>
+                        <h5>Laravel Web Apps</h5>
                         <ul>
-                            <li>Logos</li>
-                            <li>Corporate Identity</li>
-                            <li>Business Cards</li>
-                            <li>Packaging</li>
+                            <li>Custom Web Applications</li>
+                            <li>MVC Architecture</li>
+                            <li>Blade Template</li>
+                            <li>Authentication & Roles</li>
+                            <li>Queue & Jobs</li>
+                            <li>Event Listener</li>
+                            <li>Eloquent ORM</li>
+                            <li>Command</li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-3 animate-box" data-animate-effect="fadeInLeft">
                     <div class="item active mb-30"> <span class="icon"><i class="et-circle-compass"></i></span>
-                        <h5>Development</h5>
+                        <h5>RESTful APIs</h5>
                         <ul>
-                            <li>Websites</li>
-                            <li>Native Apps</li>
-                            <li>WordPress</li>
-                            <li>eCommerce</li>
+                            <li>Secure API Architecture</li>
+                            <li>Sanctum & JWT Auth</li>
+                            <li>Payment Gateway Integrations</li>
+                            <li>Third-party Webhooks</li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-3 mb-30 animate-box" data-animate-effect="fadeInLeft">
-                    <div class="item"> <span class="icon"><i class="et-strategy"></i></span>
-                        <h5>Marketing</h5>
+                    <div class="item"> <span class="icon"><i class="et-piechart"></i></span>
+                        <h5>Database Architecture</h5>
                         <ul>
-                            <li>Strategy</li>
-                            <li>SEO</li>
-                            <li>Sales</li>
-                            <li>Email Campaigns</li>
+                            <li>MySQL Relational Modeling</li>
+                            <li>Query Optimization</li>
+                            <li>Data Indexing & Caching</li>
+                            <li>Migrations & Seeders</li>
                         </ul>
                     </div>
                 </div>
                 <div class="col-md-3 animate-box" data-animate-effect="fadeInLeft">
-                    <div class="item"> <span class="icon"><i class="et-piechart"></i></span>
-                        <h5>Product Design</h5>
+                    <div class="item"> <span class="icon"><i class="et-tools"></i></span>
+                        <h5>Maintenance & Upgrades</h5>
                         <ul>
-                            <li>UX App Design</li>
-                            <li>Corporate Identity</li>
-                            <li>Business Cards</li>
-                            <li>Packaging</li>
+                            <li>CodeIgniter to Laravel Migration</li>
+                            <li>Code Refactoring & Cleanup</li>
+                            <li>Performance Tuning</li>
+                            <li>Security & Bug Fixes</li>
                         </ul>
                     </div>
                 </div>
@@ -454,9 +469,9 @@
                     </div>
                 </div>
                 <div class="col-md-6 info mb-30 animate-box" data-animate-effect="fadeInLeft">
-                    <p><b>STERK COMPANY INC.</b>
-                        <br>Vivamus nec magna rhoncus felis faucibus printy.
-                        <br>Faucibus printy nec magna rhoncus printy.
+                    <p><b>Abhishek Kumar</b>
+                        <br>Laravel Developer & Backend Specialist.
+                        <br>Feel free to reach out for new projects, collaboration, or consulting.
                     </p>
                     <div class="item">
                         <p><i class="ti-mobile" style="color:#dca167;margin-right:8px;"></i><b>Phone</b> : <a href="tel:+918896326943">+91 8896326943</a></p>
@@ -470,10 +485,16 @@
                         </p>
                     </div>
                     <div class="item">
-                        <p><i class="ti-map-alt" style="color:#dca167;margin-right:8px;"></i><b>Address</b> : Lucknow — Uttar Pradesh India</p>
+                        <p><i class="ti-map-alt" style="color:#dca167;margin-right:8px;"></i><b>Address</b> : Lucknow — Uttar Pradesh, India</p>
                     </div>
                     <div class="item">
                         <p><i class="ti-email" style="color:#dca167;margin-right:8px;"></i><b>Email</b> : <a href="mailto:shakya.shivam6@gmail.com">shakya.shivam6@gmail.com</a></p>
+                    </div>
+                    <div class="item">
+                        <p><i class="ti-linkedin" style="color:#dca167;margin-right:8px;"></i><b>LinkedIn</b> : <a href="https://www.linkedin.com/in/abhishek-shakya-406321120" target="_blank">linkedin.com/in/abhishek-shakya</a></p>
+                    </div>
+                    <div class="item">
+                        <p><i class="ti-github" style="color:#dca167;margin-right:8px;"></i><b>GitHub</b> : <a href="https://github.com/shakyashivam6" target="_blank">github.com/shakyashivam6</a></p>
                     </div>
                 </div>
                 <div class="col-md-6 animate-box" data-animate-effect="fadeInLeft" id="get_inTouch">
@@ -514,8 +535,8 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="text-center animate-box" data-animate-effect="fadeInUp">
-                        <h5 class="mb-0 subtitle"><a href="#">Do you like our work?</a></h5>
-                        <h3>Let’s work together!</h3>
+                        <h5 class="mb-0 subtitle"><a href="#contact">Looking for an experienced Laravel Developer?</a></h5>
+                        <h3>Let’s build something great together!</h3>
                         <a class="sterk-btn2" href="#get_inTouch" type="button">Get in touch</a>
                     </div>
                 </div>
