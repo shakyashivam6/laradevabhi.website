@@ -499,27 +499,69 @@
                 </div>
                 <div class="col-md-6 animate-box" data-animate-effect="fadeInLeft" id="get_inTouch">
                     <p><b>GET IN TOUCH</b></p>
-                    <form method="post" class="row">
+                    
+                    <!-- Form Status / Feedback Message -->
+                    <div id="contact_alert" style="display:none; font-size: 13px; margin-bottom: 15px;"></div>
+
+                    <form id="contact_form" method="post" class="row">
                         @csrf
+                        
+                        <!-- Anti-Bot Honeypot Field -->
+                        <div style="position: absolute; left: -9999px; top: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+                            <input type="text" name="website_url" id="website_url" tabindex="-1" autocomplete="off">
+                            <input type="hidden" name="form_time" id="form_time" value="{{ time() }}">
+                        </div>
+
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <input type="text" class="form-control" placeholder="Name *" required>
+                                <input type="text" name="name" id="contact_name" class="form-control" placeholder="Name *" required>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="form-group">
-                                <input type="text" class="form-control" placeholder="Email / Phone">
+                                <input type="email" name="email" id="contact_email" class="form-control" placeholder="Email *" required>
                             </div>
                         </div>
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <textarea name="message" id="message" cols="30" rows="4" class="form-control"
-                                    placeholder="Message"></textarea>
+                                <input type="tel" name="mobile" id="contact_mobile" class="form-control" placeholder="Phone (Optional)">
                             </div>
                         </div>
                         <div class="col-sm-12">
                             <div class="form-group">
-                                <button class="sterk-btn2" type="submit">Say Hello!</button>
+                                <textarea name="message" id="contact_message" cols="30" rows="4" class="form-control"
+                                    placeholder="Message *" required></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Google reCAPTCHA -->
+                        <div class="col-sm-12 mb-3" id="recaptcha_wrap">
+                            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.site_key') }}"></div>
+                        </div>
+
+                        <!-- OTP Field (Matches identical form style) -->
+                        <div class="col-sm-12" id="otp_section" style="display:none;">
+                            <div class="form-group">
+                                <input type="text" name="otp" id="contact_otp" maxlength="6" class="form-control" placeholder="Enter 6-Digit OTP *">
+                            </div>
+                            <div class="text-right" style="margin-top: -12px; margin-bottom: 20px;">
+                                <a href="javascript:void(0)" id="btn_resend_otp" style="font-size: 12px; color: #dca167; text-decoration: none;">
+                                    Resend Code
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="col-sm-12">
+                            <div class="form-group">
+                                <button class="sterk-btn2" type="button" id="btn_send_otp">
+                                    <span class="btn-text">Verify Email & Send</span>
+                                    <span class="btn-loader" style="display:none;"><i class="ti-reload spin-icon"></i> Sending Code...</span>
+                                </button>
+                                <button class="sterk-btn2" type="button" id="btn_verify_submit" style="display:none;">
+                                    <span class="btn-verify-text">Say Hello!</span>
+                                    <span class="btn-verify-loader" style="display:none;"><i class="ti-reload spin-icon"></i> Submitting...</span>
+                                </button>
                             </div>
                         </div>
                     </form>
@@ -543,4 +585,208 @@
             </div>
         </div>
     </section>
+
+    <x-slot:scripts>
+        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <style>
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+            .spin-icon { display: inline-block; animation: spin 1s infinite linear; }
+            #contact_alert .alert { border: none; font-weight: 500; }
+            #contact_alert .alert-success { background-color: #d4edda; color: #155724; border-left: 4px solid #28a745; }
+            #contact_alert .alert-danger { background-color: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+        </style>
+        <script>
+            $(document).ready(function() {
+                var sendOtpUrl = "{{ route('contact.sendOtp') }}";
+                var verifyUrl = "{{ route('contact.verifySubmit') }}";
+
+                function showContactAlert(type, message) {
+                    var color = type === 'success' ? '#28a745' : '#dc3545';
+                    var icon = type === 'success' ? 'ti-check' : 'ti-alert';
+                    $('#contact_alert').hide().html(
+                        '<div style="color: ' + color + '; font-size: 13px; font-weight: 500; padding: 6px 0;">' +
+                        '<i class="' + icon + '" style="margin-right: 6px;"></i>' + message +
+                        '</div>'
+                    ).fadeIn(300);
+                }
+
+                // Step 1: Send OTP to User's Email
+                $('#btn_send_otp, #btn_resend_otp').on('click', function(e) {
+                    e.preventDefault();
+                    $('#contact_alert').hide().empty();
+
+                    var name = $('#contact_name').val().trim();
+                    var email = $('#contact_email').val().trim();
+                    var mobile = $('#contact_mobile').val().trim();
+                    var message = $('#contact_message').val().trim();
+                    var websiteUrl = $('#website_url').val();
+                    var formTime = $('#form_time').val();
+
+                    if (!name) {
+                        showContactAlert('error', 'Please enter your name.');
+                        $('#contact_name').focus();
+                        return;
+                    }
+
+                    if (!email || !email.includes('@')) {
+                        showContactAlert('error', 'Please enter a valid email address.');
+                        $('#contact_email').focus();
+                        return;
+                    }
+
+                    if (!message) {
+                        showContactAlert('error', 'Please write your message.');
+                        $('#contact_message').focus();
+                        return;
+                    }
+
+                    // Check Google reCAPTCHA
+                    var recaptchaResponse = typeof grecaptcha !== 'undefined' ? grecaptcha.getResponse() : '';
+                    if ($('.g-recaptcha').length && !recaptchaResponse) {
+                        showContactAlert('error', 'Please verify that you are not a robot (reCAPTCHA).');
+                        return;
+                    }
+
+                    var isResend = $(this).attr('id') === 'btn_resend_otp';
+                    var sendBtn = $('#btn_send_otp');
+                    var resendBtn = $('#btn_resend_otp');
+                    
+                    if (isResend) {
+                        resendBtn.text('Resending...');
+                    } else {
+                        sendBtn.prop('disabled', true);
+                        sendBtn.find('.btn-text').hide();
+                        sendBtn.find('.btn-loader').show();
+                    }
+
+                    $.ajax({
+                        url: sendOtpUrl,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            name: name,
+                            email: email,
+                            mobile: mobile,
+                            message: message,
+                            website_url: websiteUrl,
+                            form_time: formTime,
+                            'g-recaptcha-response': recaptchaResponse
+                        },
+                        dataType: 'json',
+                        success: function(res) {
+                            if (isResend) {
+                                resendBtn.text('Resend Code');
+                            }
+
+                            if (res.status === 'success') {
+                                showContactAlert('success', res.message);
+                                $('#recaptcha_wrap').slideUp(300);
+                                sendBtn.hide();
+                                $('#otp_section').slideDown(300);
+                                $('#btn_verify_submit').fadeIn(300);
+                                $('#contact_otp').focus();
+                            } else {
+                                if (!isResend) {
+                                    sendBtn.prop('disabled', false);
+                                    sendBtn.find('.btn-text').show();
+                                    sendBtn.find('.btn-loader').hide();
+                                }
+                                if (typeof grecaptcha !== 'undefined') { grecaptcha.reset(); }
+                                showContactAlert('error', res.message || 'Unable to send code.');
+                            }
+                        },
+                        error: function(xhr) {
+                            if (typeof grecaptcha !== 'undefined') { grecaptcha.reset(); }
+                            if (isResend) {
+                                resendBtn.text('Resend Code');
+                            } else {
+                                sendBtn.prop('disabled', false);
+                                sendBtn.find('.btn-text').show();
+                                sendBtn.find('.btn-loader').hide();
+                            }
+
+                            var errMsg = 'Unable to send verification code. Please try again.';
+                            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                var errList = Object.values(xhr.responseJSON.errors).flat();
+                                errMsg = errList.join('<br>');
+                            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errMsg = xhr.responseJSON.message;
+                            }
+                            showContactAlert('error', errMsg);
+                        }
+                    });
+                });
+
+                // Step 2: Confirm OTP & Final Submit
+                $('#btn_verify_submit').on('click', function(e) {
+                    e.preventDefault();
+                    $('#contact_alert').hide().empty();
+
+                    var name = $('#contact_name').val().trim();
+                    var email = $('#contact_email').val().trim();
+                    var mobile = $('#contact_mobile').val().trim();
+                    var message = $('#contact_message').val().trim();
+                    var otp = $('#contact_otp').val().trim();
+                    var websiteUrl = $('#website_url').val();
+
+                    if (!otp || otp.length !== 6) {
+                        showContactAlert('error', 'Please enter the 6-digit verification code.');
+                        $('#contact_otp').focus();
+                        return;
+                    }
+
+                    var btn = $('#btn_verify_submit');
+                    btn.prop('disabled', true);
+                    btn.find('.btn-verify-text').hide();
+                    btn.find('.btn-verify-loader').show();
+
+                    $.ajax({
+                        url: verifyUrl,
+                        type: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            name: name,
+                            email: email,
+                            mobile: mobile,
+                            message: message,
+                            otp: otp,
+                            website_url: websiteUrl
+                        },
+                        dataType: 'json',
+                        success: function(res) {
+                            btn.prop('disabled', false);
+                            btn.find('.btn-verify-text').show();
+                            btn.find('.btn-verify-loader').hide();
+
+                            if (res.status === 'success') {
+                                $('#contact_form').slideUp(300);
+                                $('#contact_alert').html(
+                                    '<div style="color: #5d8b82; font-size: 16px; font-weight: 500; padding: 25px 0;">' +
+                                    '<i class="ti-check" style="margin-right: 8px; font-size: 20px;"></i>' +
+                                    res.message +
+                                    '</div>'
+                                ).fadeIn(300);
+                            } else {
+                                showContactAlert('error', res.message || 'Verification failed.');
+                            }
+                        },
+                        error: function(xhr) {
+                            btn.prop('disabled', false);
+                            btn.find('.btn-verify-text').show();
+                            btn.find('.btn-verify-loader').hide();
+
+                            var errMsg = 'Verification failed. Please check your code.';
+                            if (xhr.responseJSON && xhr.responseJSON.errors) {
+                                var errList = Object.values(xhr.responseJSON.errors).flat();
+                                errMsg = errList.join('<br>');
+                            } else if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errMsg = xhr.responseJSON.message;
+                            }
+                            showContactAlert('error', errMsg);
+                        }
+                    });
+                });
+            });
+        </script>
+    </x-slot:scripts>
 </x-layout>
