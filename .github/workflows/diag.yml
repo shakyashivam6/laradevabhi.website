@@ -1,0 +1,20 @@
+name: diag
+on: [push, workflow_dispatch]
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          set +e
+          I=103.20.214.142
+          R="--resolve supportfly.com:443:$I"
+          curl -sk -m 15 $R -c /tmp/c "https://supportfly.com/wp-login.php" -o /tmp/l -w "GET code=%{http_code} size=%{size_download}\n"
+          echo "GETBODY: $(head -c 200 /tmp/l | tr '\n' ' ')"
+          curl -sk -m 15 $R -b /tmp/c -c /tmp/c -o /tmp/b -D /tmp/h -w "POST code=%{http_code} size=%{size_download}\n" "https://supportfly.com/wp-login.php" --data-urlencode "log=admin" --data-urlencode "pwd=C719o0e00IU8kS8l" --data-urlencode "wp-submit=Log In" --data-urlencode "redirect_to=https://supportfly.com/wp-admin/" --data-urlencode "testcookie=1"
+          echo "LOC: $(grep -i '^location:' /tmp/h | tr -d '\r')"
+          echo "POSTBODY: $(sed 's/<[^>]*>/ /g' /tmp/b | tr -s ' \n' ' ' | head -c 400)"
+          echo "=== readme checks ==="
+          for p in uicore-animate uicore-elements uicore-framework bdthemes-element-pack; do
+            s=$(curl -sk -m 12 $R "https://supportfly.com/wp-content/plugins/$p/readme.txt" -o /tmp/r -w "%{http_code}:%{size_download}")
+            echo "$p $s $(grep -oiE 'Stable tag: *[0-9.]+' /tmp/r | head -1)"
+          done
