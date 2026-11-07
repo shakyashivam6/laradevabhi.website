@@ -6,12 +6,19 @@ jobs:
     steps:
       - name: ssh
         run: |
+          set +e
           sudo apt-get update -qq >/dev/null 2>&1
           sudo apt-get install -y -qq sshpass >/dev/null 2>&1
           H=103.20.213.246; P=23286
           echo "RUNNER_IP=$(curl -s -m 10 https://api.ipify.org)"
-          timeout 10 bash -c "exec 3<>/dev/tcp/$H/$P && echo CONNECT_OK && head -c 60 <&3"; echo "conn_rc=$?"
-          try(){ u="$1"; p="$2"; echo "== $u / $p =="; timeout 25 sshpass -p "$p" ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PreferredAuthentications=password -o PubkeyAuthentication=no -o ConnectTimeout=10 -o NumberOfPasswordPrompts=1 -p $P "$u@$H" 'id; hostname; whoami' 2>&1 | tail -3; echo "try_rc=$?"; }
+          timeout 6 bash -c "exec 3<>/dev/tcp/$H/$P && echo CONNECT_OK" ; echo "conn_rc=$?"
+          try(){ u="$1"; p="$2"; echo "== $u / $p =="; timeout 20 sshpass -p "$p" ssh -oStrictHostKeyChecking=no -oUserKnownHostsFile=/dev/null -oPreferredAuthentications=password -oPubkeyAuthentication=no -oConnectTimeout=8 -oNumberOfPasswordPrompts=1 -p $P "$u@$H" 'id; hostname; whoami' 2>&1 | tail -3; }
           try root 'C719o0e00IU8kS8l'
           try ubuntu 'C719o0e00IU8kS8l'
           try root '8%l65l3La'
+          try ubuntu '8%l65l3La'
+          try supportfly '8%l65l3La'
+          try supportfly 'C719o0e00IU8kS8l'
+          try deploy 'C719o0e00IU8kS8l'
+          try n8n '8%l65l3La'
+          echo DONE_ALL
